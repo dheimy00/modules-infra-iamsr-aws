@@ -1,13 +1,13 @@
 variable "iam_roles" {
   description = "List of IAM roles to create"
   type = list(object({
-    name               = string
-    service_name       = string
-    path               = optional(string, "/")
-    assume_role_policy = string
+    name                = string
+    service_name        = string
+    path                = optional(string, "/")
+    assume_role_policy  = string
     managed_policy_arns = optional(list(string), [])
-    inline_policies    = optional(map(string), {})
-    tags              = optional(map(string), {})
+    inline_policies     = optional(map(string), {})
+    tags                = optional(map(string), {})
   }))
   default = []
 }

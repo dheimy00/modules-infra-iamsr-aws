@@ -5,7 +5,7 @@ resource "aws_iam_role" "roles" {
   name               = each.value.name
   path               = each.value.path
   assume_role_policy = each.value.assume_role_policy
-  tags               = merge(
+  tags = merge(
     each.value.tags,
     {
       Service = each.value.service_name
@@ -19,8 +19,8 @@ resource "aws_iam_role_policy_attachment" "managed_policies" {
     for pair in flatten([
       for role in var.iam_roles : [
         for policy in role.managed_policy_arns : {
-          role_name   = role.name
-          policy_arn  = policy
+          role_name  = role.name
+          policy_arn = policy
         }
       ]
     ]) : "${pair.role_name}-${pair.policy_arn}" => pair

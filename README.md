@@ -86,6 +86,7 @@ module "iamsr_module" {
 }
 ```
 
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |

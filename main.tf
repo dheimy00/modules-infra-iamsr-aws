@@ -4,7 +4,7 @@ resource "aws_iam_role" "roles" {
 
   name               = each.value.name
   path               = each.value.path
-  assume_role_policy = jsonencode(jsondecode(each.value.trust_policy_document))
+  assume_role_policy = fileexists(each.value.trust_policy_document) ? file(each.value.trust_policy_document) : each.value.trust_policy_document
   tags               = each.value.tags
 }
 
@@ -32,6 +32,6 @@ resource "aws_iam_policy" "policies" {
   name        = each.value.name
   path        = each.value.path
   description = each.value.description
-  policy      = jsonencode(jsondecode(each.value.document))
+  policy      = fileexists(each.value.document) ? file(each.value.document) : each.value.document
   tags        = each.value.tags
 } 

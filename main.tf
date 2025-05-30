@@ -4,13 +4,8 @@ resource "aws_iam_role" "roles" {
 
   name               = each.value.name
   path               = each.value.path
-  assume_role_policy = each.value.assume_role_policy
-  tags = merge(
-    each.value.tags,
-    {
-      Service = each.value.service_name
-    }
-  )
+  assume_role_policy = each.value.trust_policy_document
+  tags               = each.value.tags
 }
 
 # Attach managed policies to roles
@@ -18,7 +13,7 @@ resource "aws_iam_role_policy_attachment" "managed_policies" {
   for_each = {
     for pair in flatten([
       for role in var.iam_roles : [
-        for policy in role.managed_policy_arns : {
+        for policy in role.attached_policies : {
           role_name  = role.name
           policy_arn = policy
         }
@@ -30,25 +25,6 @@ resource "aws_iam_role_policy_attachment" "managed_policies" {
   policy_arn = each.value.policy_arn
 }
 
-# Create inline policies for roles
-resource "aws_iam_role_policy" "inline_policies" {
-  for_each = {
-    for pair in flatten([
-      for role in var.iam_roles : [
-        for name, policy in role.inline_policies : {
-          role_name = role.name
-          name      = name
-          policy    = policy
-        }
-      ]
-    ]) : "${pair.role_name}-${pair.name}" => pair
-  }
-
-  name   = each.value.name
-  role   = aws_iam_role.roles[each.value.role_name].id
-  policy = each.value.policy
-}
-
 # Create IAM policies
 resource "aws_iam_policy" "policies" {
   for_each = { for idx, policy in var.iam_policies : policy.name => policy }
@@ -56,6 +32,6 @@ resource "aws_iam_policy" "policies" {
   name        = each.value.name
   path        = each.value.path
   description = each.value.description
-  policy      = each.value.policy
+  policy      = each.value.document
   tags        = each.value.tags
 } 

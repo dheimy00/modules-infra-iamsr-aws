@@ -8,6 +8,17 @@ resource "aws_iam_role" "roles" {
   tags               = each.value.tags
 }
 
+# Create IAM policies
+resource "aws_iam_policy" "policies" {
+  for_each = { for idx, policy in var.iam_policies : policy.name => policy }
+
+  name        = each.value.name
+  path        = each.value.path
+  description = each.value.description
+  policy      = fileexists(each.value.document) ? file(each.value.document) : each.value.document
+  tags        = each.value.tags
+}
+
 # Attach managed policies to roles
 resource "aws_iam_role_policy_attachment" "managed_policies" {
   for_each = {
@@ -25,13 +36,19 @@ resource "aws_iam_role_policy_attachment" "managed_policies" {
   policy_arn = each.value.policy_arn
 }
 
-# Create IAM policies
-resource "aws_iam_policy" "policies" {
-  for_each = { for idx, policy in var.iam_policies : policy.name => policy }
+# Attach custom policies to roles
+resource "aws_iam_role_policy_attachment" "custom_policies" {
+  for_each = {
+    for pair in flatten([
+      for role in var.iam_roles : [
+        for policy in var.iam_policies : {
+          role_name  = role.name
+          policy_arn = aws_iam_policy.policies[policy.name].arn
+        }
+      ]
+    ]) : "${pair.role_name}-${pair.policy_arn}" => pair
+  }
 
-  name        = each.value.name
-  path        = each.value.path
-  description = each.value.description
-  policy      = fileexists(each.value.document) ? file(each.value.document) : each.value.document
-  tags        = each.value.tags
+  role       = aws_iam_role.roles[each.value.role_name].name
+  policy_arn = each.value.policy_arn
 } 

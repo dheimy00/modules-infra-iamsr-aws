@@ -1,13 +1,12 @@
 # AWS IAM Service Role Terraform Module
 
-This Terraform module creates AWS IAM service roles and policies with configurable managed policies and inline policies.
+This Terraform module creates AWS IAM service roles and policies with configurable managed policies.
 
 ## Features
 
-- Creates multiple IAM roles with custom assume role policies
+- Creates multiple IAM roles with custom trust policies
 - Creates multiple IAM policies
 - Supports attaching multiple managed policies to roles
-- Supports creating multiple inline policies for roles
 - Configurable role paths and tags
 - Outputs role and policy ARNs, names, and IDs
 
@@ -19,10 +18,8 @@ module "iamsr_module" {
 
   iam_roles = [
     {
-      name         = "example-role"
-      service_name = "example-service"
-      path         = "/service-roles/"
-      assume_role_policy = jsonencode({
+      name = "example-role"
+      trust_policy_document = jsonencode({
         Version = "2012-10-17"
         Statement = [
           {
@@ -34,27 +31,10 @@ module "iamsr_module" {
           }
         ]
       })
-      managed_policy_arns = [
+      attached_policies = [
         "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
       ]
-      inline_policies = {
-        "custom-policy" = jsonencode({
-          Version = "2012-10-17"
-          Statement = [
-            {
-              Effect = "Allow"
-              Action = [
-                "s3:GetObject",
-                "s3:ListBucket"
-              ]
-              Resource = [
-                "arn:aws:s3:::example-bucket",
-                "arn:aws:s3:::example-bucket/*"
-              ]
-            }
-          ]
-        })
-      }
+      path = "/service-roles/"
       tags = {
         Environment = "production"
       }
@@ -63,10 +43,8 @@ module "iamsr_module" {
 
   iam_policies = [
     {
-      name        = "example-policy"
-      description = "Example IAM policy"
-      path        = "/policies/"
-      policy      = jsonencode({
+      name = "example-policy"
+      document = jsonencode({
         Version = "2012-10-17"
         Statement = [
           {
@@ -78,6 +56,8 @@ module "iamsr_module" {
           }
         ]
       })
+      path = "/policies/"
+      description = "Example IAM policy"
       tags = {
         Environment = "production"
       }
@@ -85,7 +65,6 @@ module "iamsr_module" {
   ]
 }
 ```
-
 
 ## Inputs
 
@@ -99,11 +78,9 @@ module "iamsr_module" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | name | Name of the IAM role | `string` | n/a | yes |
-| service_name | Name of the service for which the role is being created | `string` | n/a | yes |
+| trust_policy_document | JSON policy document for the trust policy | `string` | n/a | yes |
+| attached_policies | List of managed policy ARNs to attach to the role | `list(string)` | `[]` | no |
 | path | Path of the IAM role | `string` | `"/"` | no |
-| assume_role_policy | JSON policy document for the assume role policy | `string` | n/a | yes |
-| managed_policy_arns | List of managed policy ARNs to attach to the role | `list(string)` | `[]` | no |
-| inline_policies | Map of inline IAM policies to attach to the role | `map(string)` | `{}` | no |
 | tags | A map of tags to add to the IAM role | `map(string)` | `{}` | no |
 
 ### IAM Policy Object Structure
@@ -111,9 +88,9 @@ module "iamsr_module" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | name | Name of the IAM policy | `string` | n/a | yes |
+| document | JSON policy document | `string` | n/a | yes |
 | path | Path of the IAM policy | `string` | `"/"` | no |
 | description | Description of the IAM policy | `string` | `""` | no |
-| policy | JSON policy document | `string` | n/a | yes |
 | tags | A map of tags to add to the IAM policy | `map(string)` | `{}` | no |
 
 ## Outputs

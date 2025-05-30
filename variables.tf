@@ -1,23 +1,21 @@
 variable "iam_roles" {
-  description = "List of IAM roles to create"
+  description = "Lista de roles com suas configurações"
   type = list(object({
     name                  = string
-    trust_policy_document = string
-    attached_policies     = optional(list(string), [])
     path                  = optional(string, "/")
+    trust_policy_document = string       # caminho para JSON do trust policy
+    attached_policies     = list(string) # nomes das policies custom para anexar
     tags                  = optional(map(string), {})
   }))
-  default = []
 }
 
 variable "iam_policies" {
-  description = "List of IAM policies to create"
+  description = "Lista de políticas IAM custom com seus documentos"
   type = list(object({
     name        = string
-    document    = string
+    document    = string # caminho para arquivo JSON da política
     path        = optional(string, "/")
     description = optional(string, "")
     tags        = optional(map(string), {})
   }))
-  default = []
-} 
+}

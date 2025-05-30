@@ -6,7 +6,8 @@ module "iamsr_module" {
       name = "task-users-role"
       trust_policy_document = "iamsr/trust/ecs-fargate-users.json"
       attached_policies = [
-        "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+        "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/policies/policy-task-users.json"
       ]
       path = "/service-roles/"
       tags = {
@@ -19,7 +20,8 @@ module "iamsr_module" {
       name = "execution-users-role"
       trust_policy_document = "iamsr/trust/ecs-fargate-users.json"
       attached_policies = [
-        "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+        "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/policies/policy-execution-users.json"
       ]
       path = "/service-roles/"
       tags = {
@@ -52,4 +54,6 @@ module "iamsr_module" {
       }
     }
   ]
-} 
+}
+
+data "aws_caller_identity" "current" {} 
